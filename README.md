@@ -60,5 +60,9 @@ import CanvasAppRecorder from "canvas-app-recorder";
 
 ```
 
+#### CDN
+
+[https://cdn.jsdelivr.net/npm/canvas-app-recorder@0.1.0/dist/canvas-app-recorder.min.js](https://cdn.jsdelivr.net/npm/canvas-app-recorder@0.1.0/dist/canvas-app-recorder.min.js)
+
 ## License
 MIT
