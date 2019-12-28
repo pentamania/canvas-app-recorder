@@ -133,4 +133,8 @@ export default class CanvasAppRecorder {
     }
   }
 
+  static isSupported() {
+    return (window.MediaRecorder !== undefined);
+  }
+  
 }
