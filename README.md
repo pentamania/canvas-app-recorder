@@ -4,7 +4,10 @@ Canvas-app-recorder
 Module to record HTML Canvas and WebAudio based App.  
 Make sure this module is experimental, and could be drastically changed.
 
-Browser should support [captureStream/MediaStream](https://caniuse.com/#feat=mediacapture-fromelement) and [MediaRecorder API](https://caniuse.com/#feat=mediarecorder).
+
+## Prerequisites
+- Browser should support [captureStream/MediaStream](https://caniuse.com/#feat=mediacapture-fromelement) and [MediaRecorder API](https://caniuse.com/#feat=mediarecorder).
+- Your canvas should **not** be tainted. (Don't use data loaded from another origin without CORS approval!)
 
 ## Install and Usage
 
