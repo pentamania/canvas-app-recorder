@@ -20,6 +20,7 @@ export default class CanvasAppRecorder {
   private _downloadAfterStop: boolean = false
   private _chunks: Blob[] = []
   private _mediaRecorder: MediaRecorder
+  private _dummySrc: AudioBufferSourceNode|null
 
   downloadFileName: string = DEFAULT_OUTPUT_FILE_NAME
   timeSlice: number = DEFAULT_TIME_SLICE
@@ -57,6 +58,16 @@ export default class CanvasAppRecorder {
     // add silence to stable sound
     const oscillator = audioContext.createOscillator();
     oscillator.connect(destination);
+
+    /** 
+     * HACK: Chrome needs at least one source started to trigger MediaRecorder's dataavailable event, so we will play dummy silent source at the first recording.
+     * Firefox doesn't need this.
+     */
+    {
+      const dummySrc = this._dummySrc = audioContext.createBufferSource();
+      dummySrc.buffer = audioContext.createBuffer(1, 1, 22050);
+      dummySrc.connect(destination);
+    }
 
     // get stream
     const audioStream = destination.stream;
@@ -110,6 +121,10 @@ export default class CanvasAppRecorder {
   start ():void {
     this.clear();
     this._mediaRecorder.start(this.timeSlice);
+    if (this._dummySrc) {
+      this._dummySrc.start(0);
+      this._dummySrc = null;
+    }
   }
 
   stop ():Blob {
@@ -136,5 +151,5 @@ export default class CanvasAppRecorder {
   static isSupported() {
     return (window.MediaRecorder !== undefined);
   }
-  
+
 }
