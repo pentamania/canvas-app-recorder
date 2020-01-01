@@ -45,47 +45,58 @@ export default class CanvasAppRecorder {
     this._downloadAfterStop = (v === true);
   }
 
-  constructor (canvas:CanvasElement, audioContext:AudioContext, ...gainNodes:GainNode[]) {
+  constructor (
+    canvas: CanvasElement, 
+    audioContext?: AudioContext, 
+    ...gainNodes: GainNode[]
+  ) {
     this.mimeType = DEFAULT_MIME_TYPE;
+    const streams = [canvas.captureStream()];
 
-    // add sound
-    const destination = audioContext.createMediaStreamDestination();
-    // gainNode.connect(destination);
-    gainNodes.forEach( node => {
-      node.connect(destination);
-    })
-
-    // add silence to stable sound
-    const oscillator = audioContext.createOscillator();
-    oscillator.connect(destination);
-
-    /** 
-     * HACK: Chrome needs at least one source started to trigger MediaRecorder's dataavailable event, so we will play dummy silent source at the first recording.
-     * Firefox doesn't need this.
+    /**
+     * Add audio if exists
      */
-    {
-      const dummySrc = this._dummySrc = audioContext.createBufferSource();
-      dummySrc.buffer = audioContext.createBuffer(1, 1, 22050);
-      dummySrc.connect(destination);
+    if (audioContext) {
+      const destination = audioContext.createMediaStreamDestination();
+      gainNodes.forEach( node => {
+        node.connect(destination);
+      })
+
+      /**
+       * Add silence to stable sound
+       */
+      const oscillator = audioContext.createOscillator();
+      oscillator.connect(destination);
+
+      /** 
+       * HACK: Chrome needs at least one source started to trigger MediaRecorder's dataavailable event, so we will play dummy silent source at the first recording.
+       * Firefox doesn't need this.
+       */
+      {
+        const dummySrc = this._dummySrc = audioContext.createBufferSource();
+        dummySrc.buffer = audioContext.createBuffer(1, 1, 22050);
+        dummySrc.connect(destination);
+      }
+
+      streams.push(destination.stream);
     }
 
-    // get stream
-    const audioStream = destination.stream;
-    const canvasStream = canvas.captureStream();
-
-    // get tracks in the stream and mix them
-    const mediaStream = new MediaStream();
-    [canvasStream, audioStream].forEach( stream => {
-      stream.getTracks().forEach( track => mediaStream.addTrack(track));
-    });
-
-    this._mediaRecorder = new MediaRecorder(mediaStream);
-    this._mediaRecorder.ondataavailable = (e) => {
-      // console.log('send data', e);
-      if (e.data && e.data.size > 0) {
-        this._chunks.push(e.data);
-      }
-    };
+    /**
+     * Mix tracks and create recorder
+     */
+    {
+      const mediaStream = new MediaStream();
+      streams.forEach( stream => {
+        stream.getTracks().forEach( track => mediaStream.addTrack(track));
+      });
+      this._mediaRecorder = new MediaRecorder(mediaStream);
+      this._mediaRecorder.ondataavailable = (e) => {
+        // console.log('send data', e);
+        if (e.data && e.data.size > 0) {
+          this._chunks.push(e.data);
+        }
+      };
+    }
   }
 
   private _downloadResult (blob):void {
