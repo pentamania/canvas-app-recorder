@@ -1,10 +1,4 @@
-// interface/types
-interface BlobOption {
-  type: string
-}
-interface CanvasElement extends HTMLCanvasElement {
-  captureStream(frameRate?:number): MediaStream;
-}
+import { BlobOption, CanvasElement, RecordedData } from "./interfaces";
 
 // consts
 const DEFAULT_MIME_TYPE = 'mp4';
@@ -99,7 +93,7 @@ export default class CanvasAppRecorder {
     }
   }
 
-  private _downloadResult (blob):void {
+  private _downloadResult (blob): void {
     const src = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     document.body.appendChild(a);
@@ -110,7 +104,7 @@ export default class CanvasAppRecorder {
     window.URL.revokeObjectURL(src);
   }
 
-  private _onstop ():Blob {
+  private _onstop (): Blob {
     const blob = new Blob(this._chunks, this._blobOption);
     this.onstop({
       type: this._mimeType,
@@ -123,13 +117,13 @@ export default class CanvasAppRecorder {
   /**
    * @virtual
    */
-  onstop (data) {}
+  onstop (data: RecordedData) {}
 
-  clear():void {
+  clear(): void {
     this._chunks = [];
   }
 
-  start ():void {
+  start (): void {
     this.clear();
     this._mediaRecorder.start(this.timeSlice);
     if (this._dummySrc) {
@@ -138,20 +132,20 @@ export default class CanvasAppRecorder {
     }
   }
 
-  stop ():Blob {
+  stop (): Blob {
     this._mediaRecorder.stop();
     return this._onstop();
   }
 
-  pause ():void {
+  pause (): void {
     this._mediaRecorder.pause();
   }
 
-  resume ():void {
+  resume (): void {
     this._mediaRecorder.resume();
   }
 
-  toggle ():void {
+  toggle (): void {
     if (this._mediaRecorder.state === "recording") {
       this.pause();
     } else if (this._mediaRecorder.state === "paused") {
