@@ -1,6 +1,6 @@
 {
   "name": "canvas-app-recorder",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "buildParams": {
     "libName": "canvas-app-recorder",
     "namespace": "CanvasAppRecorder"
